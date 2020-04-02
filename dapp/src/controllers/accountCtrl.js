@@ -209,7 +209,7 @@
       };
 
       /**
-      * Remove wallet/account
+      * Create wallet/account
       */
       $scope.removeAccount = function (account) {
         $uibModal.open({

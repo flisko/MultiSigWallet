@@ -86,7 +86,6 @@
     <script src="./controllers/editABICtrl.js"></script>
     <script src="./controllers/accountCtrl.js"></script>
     <script src="./controllers/footerCtrl.js"></script>
-    <script src="./controllers/addressBookCtrl.js"></script>
     <script>
       if (isElectron && window.module) {
         module = window.module;
@@ -124,11 +123,6 @@
                   Transactions
                 </a>
               </li>
-              <li ng-class="getMenuItemClass('/address-book')">
-                <a href="#/address-book">
-                  Address Book
-                </a>
-              </li>
               <li ng-class="getMenuItemClass('/settings')">
                 <a href="#/settings">
                   Settings
@@ -164,11 +158,14 @@
       <ng-view></ng-view>
     </div>
     <footer>
-      <nav class="imprint" ng-controller="footerCtrl">
-        <div class="container">
-          Please read our full <a ng-click="openPolicy()">Privacy Policy</a> and <a ng-click="openTerms()">Terms of Use</a>. - <a ng-click="openImprint()">Imprint</a>
+        <nav class="imprint" ng-controller="footerCtrl">
+          <div class="container" ng-hide="isElectron">
+              Please read our full <a ng-click="openPolicy()">Privacy Policy</a> and <a href="/TermsofUseMultisig.pdf" target="_blank" >Terms of Use</a>. - <a target="_blank" href="/imprint.html">Imprint</a>
+          </div>
+          <div class="container" ng-show="isElectron">
+            Please read our full <a ng-click="openPolicy()">Privacy Policy</a> and <a ng-click="openTerms()">Terms of Use</a>. - <a ng-click="openImprint()">Imprint</a>
         </div>
-      </nav>
+          </nav>
     </footer>
   </body>
 </html>

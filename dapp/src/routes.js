@@ -29,13 +29,6 @@
         controller: 'accountCtrl',
         templateUrl: 'partials/accounts.html'
       })
-      .when("/address-book", {
-        controller: 'addressBookCtrl',
-        templateUrl: 'partials/addressBook.html'
-      })
-      .when("/404", {
-        templateUrl: 'partials/404.html'
-      })
       .otherwise({
         redirectTo: '/wallets'
       });

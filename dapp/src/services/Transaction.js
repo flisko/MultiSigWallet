@@ -12,13 +12,13 @@
 
         function processReceipt(e, receipt) {
           if (!e && receipt) {
-            receipt = Web3Service.toChecksumAddress(receipt);
             receipt.decodedLogs = Wallet.decodeLogs(receipt.logs);
             factory.update(receipt.transactionHash, { receipt: receipt });
 
             // call callback if it has
             if (factory.callbacks[receipt.transactionHash]) {
-              // Execute callback function
+              // Checksum contract address
+              receipt.contractAddress = receipt.contractAddress ? Web3Service.toChecksumAddress(receipt.contractAddress) : receipt.contractAddress;
               factory.callbacks[receipt.transactionHash](receipt);
             }
           }
@@ -26,8 +26,6 @@
 
         function getTransactionInfo(e, info) {
           if (!e && info) {
-            // Convert info object to an object containing checksum addresses
-            info = Web3Service.toChecksumAddress(info);
             factory.update(info.hash, { info: info });
           }
         }
@@ -40,9 +38,6 @@
         * Add transaction object to the transactions collection
         */
         factory.add = function (tx) {
-          // Convert incoming object's addresses to checksummed ones
-          tx = Web3Service.toChecksumAddress(tx);
-          
           var transactions = factory.get();
           transactions[tx.txHash] = tx;
           if (tx.callback) {
@@ -54,8 +49,7 @@
           try {
             $rootScope.$digest();
           }
-          catch (e) {}
-
+          catch (e) { }
           Web3Service.web3.eth.getTransaction(
             tx.txHash,
             getTransactionInfo
@@ -64,9 +58,6 @@
 
         factory.update = function (txHash, newObj) {
           var transactions = factory.get();
-          // Convert incoming object's addresses to checksummed ones
-          newObj = Web3Service.toChecksumAddress(newObj);
-          txHash = Web3Service.toChecksumAddress(txHash);
           Object.assign(transactions[txHash], newObj);
           localStorage.setItem("transactions", JSON.stringify(transactions));
           factory.updates++;
@@ -316,27 +307,27 @@
               }
               else if (block && block.hash == "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3") {
                 data.chain = "mainnet";
-                data.etherscan = "https://etherscan.io";
+                data.etherscan = "https://testnet.wanscan.org";
                 data.walletFactoryAddress = txDefault.walletFactoryAddresses["mainnet"].address;
               }
               else if (block && block.hash == "0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d") {
                 data.chain = "ropsten";
-                data.etherscan = "https://ropsten.etherscan.io";
+                data.etherscan = "https://testnet.wanscan.org";
                 data.walletFactoryAddress = txDefault.walletFactoryAddresses["ropsten"].address;
               }
               else if (block && block.hash == "0xa3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9") {
                 data.chain = "kovan";
-                data.etherscan = "https://kovan.etherscan.io";
+                data.etherscan = "https://testnet.wanscan.org";
                 data.walletFactoryAddress = txDefault.walletFactoryAddresses["kovan"].address;
               }
               else if (block && block.hash == "0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177") {
                 data.chain = "rinkeby";
-                data.etherscan = "https://rinkeby.etherscan.io";
+                data.etherscan = "https://testnet.wanscan.org";
                 data.walletFactoryAddress = txDefault.walletFactoryAddresses["rinkeby"].address;
               }
               else {
                 data.chain = "privatenet";
-                data.etherscan = "https://testnet.etherscan.io";
+                data.etherscan = "https://testnet.wanscan.org";
                 data.walletFactoryAddress = txDefault.walletFactoryAddresses["privatenet"].address;
               }
 

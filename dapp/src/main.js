@@ -22,7 +22,7 @@ process.on('unhandledRejection', function (error) {
 });
 
 /**
-* Configures and starts an internal REST server
+*
 */
 function restServerSetup () {
   restServer = express();
@@ -32,7 +32,7 @@ function restServerSetup () {
   const derivationPath = "44'/60'/0'/0";
   restServer.use(bodyParser.json());
   /**
-  * Gets connection to Ledger HW
+  *
   */
   function getLedgerConnection() {
     const connectionPromise = new Promise( (resolve, reject) => {
@@ -85,7 +85,8 @@ function restServerSetup () {
     ]);
   }
 
-  // Declare REST routes
+  // Declare routes
+  // @todo to be implemented
   restServer.route('/accounts')
   .get(function (req, res) {
     if (ledgerAddresses) {
@@ -173,7 +174,6 @@ function restServerSetup () {
       global['ledgerPort'] = restPort;
     })
     .on('error', function (err) {
-      // Look for ports available internally on user's PC
       if (restPort < 65536-1) {
         restPort++;
         _startRestServer();
@@ -185,117 +185,9 @@ function restServerSetup () {
   _startRestServer();
 }
 
-/****************************************************************
- * 
- *       ELECTRON APPLICATION SETUP/CONFIGURATION
- * 
- ****************************************************************/
-
 /**
-* Creates the main menu (upper application menu)
+*
 */
-function createMainMenu () {
-  const application = {
-    label: 'Application',
-    submenu: [
-      {
-        label: 'About',
-        role: 'about',
-      },
-      {
-        type: 'separator',
-      },
-      {
-        label: 'Quit',
-        accelerator: 'Command+Q',
-        click: () => {
-          app.quit();
-        },
-      },
-    ],
-  };
-
-  const edit = {
-    label: 'Edit',
-    submenu: [
-      {
-        label: 'Undo',
-        accelerator: 'CmdOrCtrl+Z',
-        role: 'undo',
-      },
-      {
-        label: 'Redo',
-        accelerator: 'Shift+CmdOrCtrl+Z',
-        role: 'redo',
-      },
-      {
-        type: 'separator',
-      },
-      {
-        label: 'Cut',
-        accelerator: 'CmdOrCtrl+X',
-        role: 'cut',
-      },
-      {
-        label: 'Copy',
-        accelerator: 'CmdOrCtrl+C',
-        role: 'copy',
-      },
-      {
-        label: 'Paste',
-        accelerator: 'CmdOrCtrl+V',
-        role: 'paste',
-      },
-      {
-        label: 'Select All',
-        accelerator: 'CmdOrCtrl+A',
-        role: 'selectall'
-      }
-    ],
-  };
-
-  const template = [application, edit];
-
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
-}
-
-/**
- * Creates the context menus (right mouse click menus)
- * @param {window} windowInstance 
- */
-function createContextMenus (windowInstance) {
-  // Declare context menus
-  const selectionMenu = Menu.buildFromTemplate([
-    {role: 'copy'},
-    {type: 'separator'},
-    {role: 'selectall'}
-  ]);
-
-  const inputMenu = Menu.buildFromTemplate([
-    {role: 'undo'},
-    {role: 'redo'},
-    {type: 'separator'},
-    {role: 'cut'},
-    {role: 'copy'},
-    {role: 'paste'},
-    {type: 'separator'},
-    {role: 'selectall'}
-  ]);
-
-  // Set up context menu
-  windowInstance.webContents.on('context-menu', (e, props) => {
-    const { selectionText, isEditable } = props;
-    if (isEditable) {
-      inputMenu.popup(windowInstance);
-    } else if (selectionText && selectionText.trim() !== '') {
-      selectionMenu.popup(windowInstance);
-    }
-  });
-}
-
-/**
- * Creates the main window
- */
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow(
@@ -306,17 +198,45 @@ function createWindow () {
 
   mainWindow.maximize();
 
-  // and load the app's index.html file.
+  // and load the index.html of the app.
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
     protocol: 'file:',
     slashes: true
   }));
 
-  // Open the DevTools only if on "development" environment.
+  // Open the DevTools.
   if (process.env.NODE_ENV == 'development') {
     mainWindow.webContents.openDevTools();
   }
+
+  // Declare context menus
+  const selectionMenu = Menu.buildFromTemplate([
+    {role: 'copy'},
+    {type: 'separator'},
+    {role: 'selectall'},
+  ]);
+
+  const inputMenu = Menu.buildFromTemplate([
+    {role: 'undo'},
+    {role: 'redo'},
+    {type: 'separator'},
+    {role: 'cut'},
+    {role: 'copy'},
+    {role: 'paste'},
+    {type: 'separator'},
+    {role: 'selectall'},
+  ]);
+
+  // Set up context menu
+  mainWindow.webContents.on('context-menu', (e, props) => {
+    const { selectionText, isEditable } = props;
+    if (isEditable) {
+      inputMenu.popup(mainWindow);
+    } else if (selectionText && selectionText.trim() !== '') {
+      selectionMenu.popup(mainWindow);
+    }
+  });
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -326,13 +246,19 @@ function createWindow () {
     mainWindow = null;
   });
 
-  createContextMenus(mainWindow);
-  createMainMenu();
   restServerSetup();
-}
 
-// https://github.com/electron/electron/blob/master/docs/api/app.md#appsetnamename
-app.setName('Gnosis Multisig');
+  /*mainWindow.webContents.executeJavaScript(`
+    var path = require('path');
+    module.paths.push(path.resolve('node_modules'));
+    module.paths.push(path.resolve('../node_modules'));
+    module.paths.push(path.resolve(__dirname, '..', '..', 'electron', 'node_modules'));
+    module.paths.push(path.resolve(__dirname, '..', '..', 'electron.asar', 'node_modules'));
+    module.paths.push(path.resolve(__dirname, '..', '..', 'app', 'node_modules'));
+    module.paths.push(path.resolve(__dirname, '..', '..', 'app.asar', 'node_modules'));
+    path = undefined;
+  `);*/
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

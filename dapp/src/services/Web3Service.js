@@ -39,9 +39,7 @@
         * Returns true if metamask is injected, false otherwise
         **/
         factory.isMetamaskInjected = function () {
-          return window && (typeof window.web3 !== 'undefined' &&
-            (window.web3.currentProvider.constructor.name === 'MetamaskInpageProvider' || window.web3.currentProvider.isMetaMask !== 'undefined')
-          );
+          return window && (typeof window.wan3 !== 'undefined')
         };
 
         /**
@@ -53,20 +51,20 @@
 
           factory.accounts = [];
           factory.coinbase = null;
-          var web3 = null;
+          var web3 = $window.wan3;
 
           // Legacy dapp browsers...
           if ($window.web3 && !$window.ethereum) {
-            web3 = $window.web3;
+            console.log("legacy");
+           // web3 = $window.web3;
           }
+          // TODO: figure out whether Metamask standardizes isEnabled() or find out
+          // another way to manage it
           // https://github.com/MetaMask/metamask-extension/blob/2f7d4494278ad809c1cc9fcc0d9438182003b22d/app/scripts/inpage.js#L101
-          else if ($window.ethereum) {
-            web3 = $window.ethereum;
-          }
-
-          if (!web3) {
-            reject('Web3 Provider not connected');
-            return;
+          else if ($window.ethereum && window.ethereum._metamask.isEnabled()) {
+           // web3 = $window.ethereum;
+           web3 = $window.wan3;
+           console.log("pod legacy");
           }
 
           // Ledger wallet
@@ -102,21 +100,17 @@
           }
           // injected web3 provider (Metamask, mist, etc)
           else if (txDefault.wallet == "injected" && web3 && !isElectron) {
-            factory.web3 = web3.currentProvider !== undefined ? new MultisigWeb3(web3.currentProvider) : new MultisigWeb3(web3);
+            console.log("injected");
+            factory.web3=$window.wan3;
+           // factory.web3 = web3.currentProvider !== undefined ? new MultisigWeb3(web3.currentProvider) : new MultisigWeb3(web3);
             // Set accounts
             // Convert to checksummed addresses
-            factory.web3.eth.getAccounts(function (e, accounts) {
-              if (e) {
-                throw e;
-              } else {
-                factory.accounts = factory.toChecksumAddress(accounts);
-                factory.coinbase = factory.accounts[0];
-              }
-              if (resolve) {
-                resolve();
-              }
+            factory.accounts = factory.toChecksumAddress(factory.web3.eth.accounts);
+            factory.coinbase = factory.accounts[0];
 
-            });
+            if (resolve) {
+              resolve();
+            }
           }
           else if (txDefault.wallet == 'lightwallet' && isElectron) {
             factory.lightWalletSetup();
@@ -125,6 +119,7 @@
             }
           }
           else if (txDefault.wallet == 'remotenode') {
+            console.log("remotenode");
             // Connect to Ethereum Node
             // factory.web3 = new MultisigWeb3(new RpcSubprovider({
             //   rpcUrl: txDefault.ethereumNode
@@ -166,40 +161,15 @@
           }
         };
 
-        /**
-         * Converts an object to a checksummed address when possible.
-         * Accepts objects, strings and arrays.
-         */
         factory.toChecksumAddress = function (item) {
-          var checkSummedItem;
+          let checkSummedItem;
           if (item instanceof Array) {
             checkSummedItem = [];
-            for (var x = 0; x < item.length; x++) {
+            for (let x = 0; x < item.length; x++) {
               checkSummedItem.push(factory.web3.toChecksumAddress(item[x]))
             }
           } else if (typeof item == "string") {
             checkSummedItem = factory.web3.toChecksumAddress(item)
-          } else if (typeof item == "object") {
-            checkSummedItem = {};
-            var checkSummedKey;
-            for (key in item) {
-              checkSummedKey = key.startsWith('0x') ? factory.web3.toChecksumAddress(key) : key;
-              checkSummedItem[checkSummedKey] = (typeof item[key] == "string" && item[key].startsWith('0x')) ? factory.web3.toChecksumAddress(item[key]) : item[key];
-
-              if (checkSummedItem[checkSummedKey] && checkSummedItem[checkSummedKey].address) {
-                checkSummedItem[checkSummedKey].address = factory.web3.toChecksumAddress(checkSummedItem[checkSummedKey].address);
-              }
-
-              // specific to Transaction object
-              if (checkSummedItem[checkSummedKey] && checkSummedItem[checkSummedKey].info) {
-                // Convert info object to checksummed
-                checkSummedItem[checkSummedKey].info = factory.toChecksumAddress(checkSummedItem[checkSummedKey].info);
-              }
-              if (checkSummedItem[checkSummedKey] && checkSummedKey == "info") {
-                // Convert info object to checksummed
-                checkSummedItem[checkSummedKey] = factory.toChecksumAddress(checkSummedItem[checkSummedKey]);
-              }
-            }
           } else {
             return item;
           }
@@ -226,8 +196,8 @@
                 controller: function ($scope, $uibModalInstance, Wallet, options) {
                   $scope.send = function () {
                     $uibModalInstance.close(
-                      {
-                        gas: $scope.gasLimit,
+                      { 
+                        gas: $scope.gasLimit, 
                         gasPrice: Math.ceil($scope.gasPrice * 1e9)
                       }
                     );
@@ -245,7 +215,7 @@
 
                   Wallet.getGasPrice().then(function (gasPrice) {
                     $scope.gasLimit = options.gas;
-                    $scope.minimumGasLimit = options.gas;
+                    $scope.minimumGasLimit = 21000;
                     $scope.gasPrice = gasPrice / 1e9;
                     $scope.calculateFee();
                   }).catch(function (error) {
@@ -533,7 +503,8 @@
           var web3Provider = new HookedWalletSubprovider({
             getAccounts: function (cb) {
               if (!factory.accounts.length) {
-                TrezorConnect.ethereumGetAddress("m/44'/60'/0'/0/0", function (response) {
+                TrezorConnect.ethereumGetAddress("m/44'/5718350'/0'/0", function (response) {
+                  console.log(response);
                   if (response.success) {
                     // Convert to Checksummed address
                     factory.accounts = factory.toChecksumAddress(["0x" + response.address]);
@@ -849,7 +820,7 @@
             }
           }
           else if (factory.getKeystore()) {
-            var _address;
+            let _address;
             Config.getConfiguration('accounts').map(function (account) {
               address = '0x' + account.address.replace('0x', '');
               addr.push(factory.toChecksumAddress(_address));

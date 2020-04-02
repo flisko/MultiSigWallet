@@ -3,8 +3,10 @@ const MultisigWalletWithoutDailyLimit = artifacts.require('MultiSigWallet.sol')
 const MultisigWalletFactory = artifacts.require('MultiSigWalletWithDailyLimitFactory.sol')
 
 module.exports = deployer => {
+  deployer.deploy(MultisigWalletFactory)
+  console.log("Factory with Daily Limit deployed")
   const args = process.argv.slice()
-  if (process.env.DEPLOY_FACTORY){
+ /* if (process.env.DEPLOY_FACTORY){
     deployer.deploy(MultisigWalletFactory)
     console.log("Factory with Daily Limit deployed")
   } else if (args.length < 5) {
@@ -16,5 +18,5 @@ module.exports = deployer => {
   } else {
     deployer.deploy(MultisigWalletWithDailyLimit, args[3].split(","), args[4], args[5])
     console.log("Wallet with Daily Limit deployed")
-  }
+  }*/
 }

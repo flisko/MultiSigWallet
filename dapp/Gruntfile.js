@@ -1,8 +1,3 @@
-const DAPP_PORT = process.env.DAPP_PORT || 8282;
-const DAPP_HOST = process.env.DAPP_HOST || "0.0.0.0";
-const DAPP_CERT = process.env.DAPP_CERT || "localhost.crt";
-const DAPP_KEY = process.env.DAPP_KEY || "localhost.key";
-
 module.exports = function(grunt) {
 
   // Project configuration.
@@ -18,13 +13,13 @@ module.exports = function(grunt) {
             // the server port
             // can also be written as a function, e.g.
             // port: function() { return 8282; }
-            port: DAPP_PORT,
+            port: 8282,
 
             // the host ip address
             // If specified to, for example, "127.0.0.1" the server will
             // only be available on that ip.
             // Specify "0.0.0.0" to be available everywhere
-            host: DAPP_HOST,
+            host: "0.0.0.0",
 
             // cache: <sec>,
             showDir : true,
@@ -42,13 +37,13 @@ module.exports = function(grunt) {
             // the server port
             // can also be written as a function, e.g.
             // port: function() { return 8282; }
-            port: DAPP_PORT,
+            port: 8282,
 
             // the host ip address
             // If specified to, for example, "127.0.0.1" the server will
             // only be available on that ip.
             // Specify "0.0.0.0" to be available everywhere
-            host: DAPP_HOST,
+            host: "0.0.0.0",
 
             // cache: <sec>,
             showDir : true,
@@ -71,8 +66,8 @@ module.exports = function(grunt) {
             /// Use 'https: true' for default module SSL configuration
             /// (default state is disabled)
             https: {
-                cert: DAPP_CERT,
-                key:  DAPP_KEY
+                cert: "localhost.crt",
+                key : "localhost.key"
             },
             //
             // // Tell grunt task to open the browser
@@ -231,7 +226,6 @@ module.exports = function(grunt) {
       if (jsBundleFileContent.error) {
         console.error('There have been some errores while minifying', jsBundleFileContent.error);
       } else {
-        console.log('Saving bundled file...');
         fs.writeFileSync(jsBundlePath, jsBundleFileContent.code, 'utf8');
       }
     } else {

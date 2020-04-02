@@ -2,64 +2,20 @@
   function () {
     angular
     .module("multiSigWeb")
-    .controller("sendTransactionCtrl", function ($scope, Wallet, Utils, Transaction, $uibModal, $uibModalInstance, ABI, Web3Service) {
+    .controller("sendTransactionCtrl", function ($scope, Wallet, Utils, Transaction, $uibModalInstance, ABI, Web3Service) {
       $scope.methods = [];
       $scope.tx = {
         value: 0
       };
       $scope.params = [];
 
-      /**
-       * Opens the address book modal
-       */
-      $scope.openAddressBook = function () {
-        $uibModal.open({
-          templateUrl: 'partials/modals/selectAddressFromBook.html',
-          size: 'lg',
-          controller: function ($scope, $uibModalInstance) {
-            // Load address book
-            $scope.addressBook = JSON.parse(localStorage.getItem('addressBook') || '{}');
-            // Sort addresses alphabetically
-            $scope.addressArray = Object.keys($scope.addressBook).reduce(function (acc, value) {
-              acc.push($scope.addressBook[value]);
-              return acc;
-            }, [])
-            .sort(function (a, b) {
-              if (a.name < b.name) {
-                return -1;
-              }
-              if (a.name > b.name) {
-                return 1;
-              }
-              return 0;
-            });
-
-            $scope.choose = function (item) {
-              $uibModalInstance.close({
-                item: item
-              });
-            };
-
-            $scope.cancel = function () {
-              $uibModalInstance.dismiss();
-            };
-          }
-        })
-        .result
-        .then(function (returnData) {
-          // Set transaction's recipient
-          if (returnData && returnData.item) {
-            $scope.tx.to = returnData.item.address;
-          }
-          // ng-change="updateABI()" doesn't work here, so we need
-          // to trigget it manually
-          $scope.updateABI();
-        });
-      };
-
       $scope.send = function () {
         var tx = Wallet.txDefaults({
-          gas: 21000
+          Txtype: "0x01",
+          chainId: 3,
+          gas: "0x5208",
+          gasPrice:"0x2a600b9c00",
+          data:""
         });
         Object.assign(tx, $scope.tx);
         var params = [];
@@ -77,8 +33,15 @@
             }
           });
         }
-        tx.value = new Web3().toBigNumber($scope.tx.value).mul('1e18');
+        //tx.value = new Web3().toBigNumber($scope.tx.value).mul('1e18');
+        tx.value = new Web3().toHex($scope.tx.value);
         tx.from = Web3Service.coinbase;
+        console.log(Web3Service);
+        Web3Service.web3.eth.sendTransaction(tx,function(err,tx){
+          if(!err){
+            console.log(tx);
+          }
+        });
         // if method, use contract instance method
         if ($scope.method && $scope.method.index !== undefined && $scope.method.index !== "") {
           Transaction.sendMethod(tx, $scope.abiArray, $scope.method.name, params, function (e, tx) {
@@ -98,6 +61,7 @@
         }
         else {
           try {
+            console.log(tx);
             Transaction.send(tx, function (e, tx) {
               if (e) {
                 Utils.dangerAlert(e);
@@ -106,6 +70,7 @@
                 Utils.success("Transaction was mined.");
               }
               else {
+                console.log(tx);
                 $uibModalInstance.close();
                 Utils.notification("Transaction was sent.");
 
@@ -209,7 +174,7 @@
       $scope.updateABI = function () {
         var to = $scope.tx.to;
         if (to && to.length > 40) {
-          to = Web3Service.toChecksumAddress(to);
+          to = to.toLowerCase();
           $scope.abis = ABI.get();
           if ($scope.abis[to]) {
             $scope.abi = JSON.stringify($scope.abis[to].abi);

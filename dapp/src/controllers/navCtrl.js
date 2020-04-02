@@ -54,40 +54,46 @@
         var gdprTermsAccepted = localStorage.getItem("gdprTermsAccepted");
 
         if (!gdprTermsAccepted) {
+          if (isElectron) {
             $uibModal.open({
-              templateUrl: isElectron ? 'partials/modals/disclaimerElectron.html' : 'partials/modals/disclaimer.html',
+              templateUrl: 'partials/modals/disclaimerElectron.html',
               size: 'md',
               backdrop: 'static',
               windowClass: 'bootstrap-dialog type-danger',
               controller: function ($scope, $uibModalInstance) {
-                if (isElectron) {
-                  $scope.ok = function () {
-                    $uibModalInstance.close($scope.walletOption);
-                    localStorage.setItem("gdprTermsAccepted", true);
-                    // call web3 selection modal
-                    showWeb3SelectionModal();
-                  };
-                } else {
-                  $scope.ok = function () {
-                    $uibModalInstance.close($scope.walletOption);
-                    localStorage.setItem("gdprTermsAccepted", true);
-                  };
-                  $scope.websites = txDefault.websites;
+                $scope.ok = function () {
+                  $uibModalInstance.close($scope.walletOption);
+                  localStorage.setItem("gdprTermsAccepted", true);
+                  // call web3 selection modal
+                  showWeb3SelectionModal();
+                };
+
+                $scope.openTerms = function () {
+                  shell.openExternal(txDefault.websites.wallet + '/TermsofUseMultisig.pdf');
                 }
 
-                $scope.openTerms = function() {
-                  Utils.openResource(txDefault.resources.termsOfUse);
-                }
-        
                 $scope.openPolicy = function () {
-                  Utils.openResource(txDefault.resources.privacyPolicy);
-                }
-        
-                $scope.openImprint = function () {
-                  Utils.openResource(txDefault.resources.imprint);
+                  shell.openExternal(txDefault.websites.gnosis + '/assets/pdf/PrivacyPolicyGnosisLtd.pdf');
                 }
               }
             });
+          }
+          else {
+            $uibModal.open({
+              templateUrl: 'partials/modals/disclaimer.html',
+              size: 'md',
+              backdrop: 'static',
+              windowClass: 'bootstrap-dialog type-danger',
+              controller: function ($scope, $uibModalInstance) {
+                $scope.ok = function () {
+                  $uibModalInstance.close($scope.walletOption);
+                  localStorage.setItem("gdprTermsAccepted", true);
+                };
+
+                $scope.websites = txDefault.websites;
+              }
+            });
+          }
         }
 
         /**

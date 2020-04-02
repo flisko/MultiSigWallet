@@ -240,18 +240,6 @@
         }
       }
 
-      /**
-       * Opens a resource (link to a file, webpage, etc.)
-       * @param resource {String} - the resource to open
-       */
-      factory.openResource = function (resource) {
-        if (isElectron) {
-          shell.openExternal(resource);
-        } else {
-          window.open(resource);
-        }
-      };
-
       return factory;
     });
   }
