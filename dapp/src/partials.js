@@ -1,6 +1,27 @@
 angular.module('multiSigWeb').run(['$templateCache', function($templateCache) {
   'use strict';
 
+  $templateCache.put('src/partials/404.html',
+    "<div>\r" +
+    "\n" +
+    "    <h4>\r" +
+    "\n" +
+    "      Page not found\r" +
+    "\n" +
+    "    </h4>\r" +
+    "\n" +
+    "    <p>\r" +
+    "\n" +
+    "      The resource you're looking for doesn't exist.\r" +
+    "\n" +
+    "    </p>\r" +
+    "\n" +
+    "  \r" +
+    "\n" +
+    "</div>"
+  );
+
+
   $templateCache.put('src/partials/accounts.html',
     "<div class=\"panel panel-default\">\r" +
     "\n" +
@@ -125,6 +146,126 @@ angular.module('multiSigWeb').run(['$templateCache', function($templateCache) {
     "  <div ng-if=\"!account.addresses || account.addresses.length == 0\" class=\"panel-body text-center\">\r" +
     "\n" +
     "    No accounts. Add an account <a href=\"\" ng-click=\"createWallet()\">now</a>.\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n"
+  );
+
+
+  $templateCache.put('src/partials/addressBook.html',
+    "<div class=\"panel panel-default\">\r" +
+    "\n" +
+    "  <div class=\"panel-heading\">\r" +
+    "\n" +
+    "    <div class=\"pull-right\">\r" +
+    "\n" +
+    "      <button type=\"button\" class=\"btn btn-default\" ng-click=\"addAddress()\">\r" +
+    "\n" +
+    "        Add\r" +
+    "\n" +
+    "      </button>\r" +
+    "\n" +
+    "    </div>\r" +
+    "\n" +
+    "    <h4>\r" +
+    "\n" +
+    "      Address book\r" +
+    "\n" +
+    "    </h4>\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "  <table class=\"table table-hover table-bordered table-striped\">\r" +
+    "\n" +
+    "    <thead>\r" +
+    "\n" +
+    "      <tr>\r" +
+    "\n" +
+    "        <th>\r" +
+    "\n" +
+    "          Name\r" +
+    "\n" +
+    "        </th>\r" +
+    "\n" +
+    "        <th>\r" +
+    "\n" +
+    "          Address\r" +
+    "\n" +
+    "        </th>\r" +
+    "\n" +
+    "        <th>\r" +
+    "\n" +
+    "          Type\r" +
+    "\n" +
+    "        </th>\r" +
+    "\n" +
+    "      </tr>\r" +
+    "\n" +
+    "    </thead>\r" +
+    "\n" +
+    "    <tbody>\r" +
+    "\n" +
+    "      <tr ng-repeat=\"(key, book) in addressBook\">\r" +
+    "\n" +
+    "        <td>\r" +
+    "\n" +
+    "          <span>{{ book.name }}</span>\r" +
+    "\n" +
+    "          <div class=\"pull-right form-inline\">\r" +
+    "\n" +
+    "            <button type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"editAddress(book)\">\r" +
+    "\n" +
+    "              Edit\r" +
+    "\n" +
+    "            </button>\r" +
+    "\n" +
+    "            <button type=\"button\" class=\"btn btn-danger btn-sm\" ng-click=\"removeAddress(book.address)\">\r" +
+    "\n" +
+    "              Remove\r" +
+    "\n" +
+    "            </button>            \r" +
+    "\n" +
+    "          </div>\r" +
+    "\n" +
+    "        </td>\r" +
+    "\n" +
+    "        <td>\r" +
+    "\n" +
+    "          <div uib-popover=\"{{book.address}}\" popover-trigger=\"'mouseenter'\">\r" +
+    "\n" +
+    "            {{::book.address|address}}\r" +
+    "\n" +
+    "            <button type=\"button\" class=\"btn btn-default btn-sm pull-right\"\r" +
+    "\n" +
+    "              data-clipboard-text=\"{{book.address}}\"\r" +
+    "\n" +
+    "              ngclipboard>\r" +
+    "\n" +
+    "              Copy\r" +
+    "\n" +
+    "            </button>\r" +
+    "\n" +
+    "          </div>\r" +
+    "\n" +
+    "        </td>\r" +
+    "\n" +
+    "        <td>\r" +
+    "\n" +
+    "          <span>{{ book.type }}</span>\r" +
+    "\n" +
+    "        </td>\r" +
+    "\n" +
+    "      </tr>\r" +
+    "\n" +
+    "    </tbody>\r" +
+    "\n" +
+    "  </table>\r" +
+    "\n" +
+    "  <div ng-if=\"showEmptyBook()\" class=\"panel-body text-center\">\r" +
+    "\n" +
+    "    No addresses. Add a new entry <a href=\"\" ng-click=\"addAddress()\">now</a>.\r" +
     "\n" +
     "  </div>\r" +
     "\n" +
@@ -1576,6 +1717,56 @@ angular.module('multiSigWeb').run(['$templateCache', function($templateCache) {
   );
 
 
+  $templateCache.put('src/partials/modals/addAddressToBook.html',
+    "<div class=\"modal-header\">\r" +
+    "\n" +
+    "  <h3 class=\"modal-title\">\r" +
+    "\n" +
+    "    Add address\r" +
+    "\n" +
+    "  </h3>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n" +
+    "<div class=\"modal-body\" id=\"modal-body\">\r" +
+    "\n" +
+    "  <div class=\"form-group\">\r" +
+    "\n" +
+    "    <label for=\"name\">Name</label>\r" +
+    "\n" +
+    "    <input id=\"name\" type=\"text\" class=\"form-control\" ng-model=\"book.name\" required />\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "  <div class=\"form-group\">\r" +
+    "\n" +
+    "    <label for=\"address\">Address</label>\r" +
+    "\n" +
+    "    <input id=\"address\" type=\"text\" class=\"form-control\" ng-model=\"book.address\" required />\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n" +
+    "<div class=\"modal-footer\">\r" +
+    "\n" +
+    "  <button class=\"btn btn-default\" type=\"button\" ng-click=\"ok()\" ng-disabled=\"!book.address.length > 0 || !book.name.length > 0\">\r" +
+    "\n" +
+    "    Ok\r" +
+    "\n" +
+    "  </button>\r" +
+    "\n" +
+    "  <button class=\"btn btn-danger\" type=\"button\" ng-click=\"cancel()\">\r" +
+    "\n" +
+    "    Cancel\r" +
+    "\n" +
+    "  </button>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n"
+  );
+
+
   $templateCache.put('src/partials/modals/addLightWalletAccount.html',
     "<div class=\"modal-header\">\r" +
     "\n" +
@@ -2533,6 +2724,56 @@ angular.module('multiSigWeb').run(['$templateCache', function($templateCache) {
   );
 
 
+  $templateCache.put('src/partials/modals/editAddressBookItem.html',
+    "<div class=\"modal-header\">\r" +
+    "\n" +
+    "  <h3 class=\"modal-title\">\r" +
+    "\n" +
+    "    Edit address book item\r" +
+    "\n" +
+    "  </h3>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n" +
+    "<div class=\"modal-body\" id=\"modal-body\">\r" +
+    "\n" +
+    "  <div class=\"form-group\">\r" +
+    "\n" +
+    "    <label for=\"name\">Name</label>\r" +
+    "\n" +
+    "    <input id=\"name\" type=\"text\" class=\"form-control\" ng-model=\"book.name\" required />\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "  <div class=\"form-group\">\r" +
+    "\n" +
+    "    <label for=\"address\">Address</label>\r" +
+    "\n" +
+    "    <input id=\"address\" type=\"text\" class=\"form-control\" ng-model=\"book.address\" readonly />\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n" +
+    "<div class=\"modal-footer\">\r" +
+    "\n" +
+    "  <button class=\"btn btn-default\" type=\"button\" ng-click=\"ok()\" ng-disabled=\"!book.address.length > 0 || !book.name.length > 0\">\r" +
+    "\n" +
+    "    Ok\r" +
+    "\n" +
+    "  </button>\r" +
+    "\n" +
+    "  <button class=\"btn btn-danger\" type=\"button\" ng-click=\"cancel()\">\r" +
+    "\n" +
+    "    Cancel\r" +
+    "\n" +
+    "  </button>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n"
+  );
+
+
   $templateCache.put('src/partials/modals/editLightWalletAccount.html',
     "<div class=\"modal-header\">\r" +
     "\n" +
@@ -3469,6 +3710,56 @@ angular.module('multiSigWeb').run(['$templateCache', function($templateCache) {
   );
 
 
+  $templateCache.put('src/partials/modals/removeAddressFromBook.html',
+    "<div class=\"modal-header\">\r" +
+    "\n" +
+    "  <h3 class=\"modal-title\">\r" +
+    "\n" +
+    "    Remove address from book\r" +
+    "\n" +
+    "  </h3>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n" +
+    "<div class=\"modal-body\" id=\"modal-body\">\r" +
+    "\n" +
+    "  <div class=\"form-group\">\r" +
+    "\n" +
+    "    <label for=\"name\">Name</label>\r" +
+    "\n" +
+    "    <input id=\"name\" type=\"text\" class=\"form-control\" ng-model=\"book.name\" readonly />\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "  <div class=\"form-group\">\r" +
+    "\n" +
+    "    <label for=\"address\">Address</label>\r" +
+    "\n" +
+    "    <input id=\"address\" type=\"text\" class=\"form-control\" ng-model=\"book.address\" readonly />\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n" +
+    "<div class=\"modal-footer\">\r" +
+    "\n" +
+    "  <button class=\"btn btn-default\" type=\"button\" ng-click=\"ok()\">\r" +
+    "\n" +
+    "    Ok\r" +
+    "\n" +
+    "  </button>\r" +
+    "\n" +
+    "  <button class=\"btn btn-danger\" type=\"button\" ng-click=\"cancel()\">\r" +
+    "\n" +
+    "    Cancel\r" +
+    "\n" +
+    "  </button>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n"
+  );
+
+
   $templateCache.put('src/partials/modals/removeLightWalletAccount.html',
     "<div class=\"modal-header\">\r" +
     "\n" +
@@ -4137,6 +4428,228 @@ angular.module('multiSigWeb').run(['$templateCache', function($templateCache) {
     "  </div>\r" +
     "\n" +
     "</form>\r" +
+    "\n"
+  );
+
+
+  $templateCache.put('src/partials/modals/safeMigration.html',
+    "<div class=\"modal-header\">\r" +
+    "\n" +
+    "  <h3 class=\"modal-title\">\r" +
+    "\n" +
+    "    Gnosis Safe Multisig is like Multisig but better!\r" +
+    "\n" +
+    "  </h3>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n" +
+    "<div class=\"modal-body\" id=\"modal-body\">\r" +
+    "\n" +
+    "  <p>\r" +
+    "\n" +
+    "    Gnosis Safe Multisig is a successor to the Multisig Wallet.\r" +
+    "\n" +
+    "    Migrate your old Multisig and enjoy new benefits:\r" +
+    "\n" +
+    "  </p>\r" +
+    "\n" +
+    "\r" +
+    "\n" +
+    "  <div class=\"safe-features\">\r" +
+    "\n" +
+    "      <ul class=\"left\">\r" +
+    "\n" +
+    "        <li>\r" +
+    "\n" +
+    "          <h4>Future Proof</h4>\r" +
+    "\n" +
+    "          The upgradable and modular design allows you to be ready for future use-cases and asset-types\r" +
+    "\n" +
+    "        </li>\r" +
+    "\n" +
+    "        <li>\r" +
+    "\n" +
+    "          <h4>Formally Verified</h4>\r" +
+    "\n" +
+    "          While our code is always audited, we've gone one step further and formally\r" +
+    "\n" +
+    "          verified the Gnosis Safe smart contracts\r" +
+    "\n" +
+    "        </li>\r" +
+    "\n" +
+    "      </ul>\r" +
+    "\n" +
+    "      <ul class=\"right\">\r" +
+    "\n" +
+    "          <li>\r" +
+    "\n" +
+    "            <h4>DeFi-Compatible</h4>\r" +
+    "\n" +
+    "            You will soon be able to interact with various protocols right from the Safe Multisig interface\r" +
+    "\n" +
+    "          </li>\r" +
+    "\n" +
+    "          <li>\r" +
+    "\n" +
+    "            <h4>User Experience</h4>\r" +
+    "\n" +
+    "            Interacting with a Multisignature Wallet has never been easier\r" +
+    "\n" +
+    "          </li>\r" +
+    "\n" +
+    "        </ul>\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "\r" +
+    "\n" +
+    "  <h3>Upgrading couldn't be easier:</h3>\r" +
+    "\n" +
+    "  <ul class=\"safe-migration-ul\">\r" +
+    "\n" +
+    "    <li>\r" +
+    "\n" +
+    "      Click the button below to create a new Safe. The owner and signature policies of your existing\r" +
+    "\n" +
+    "      Multisig will be applied to it automatically.\r" +
+    "\n" +
+    "    </li>\r" +
+    "\n" +
+    "    <li>\r" +
+    "\n" +
+    "      Try out the new interface and learn about the many benefits.\r" +
+    "\n" +
+    "    </li>\r" +
+    "\n" +
+    "    <li>\r" +
+    "\n" +
+    "      As soon as you feel comfortable, start moving funds to your new Safe. <a href=\"https://safe.gnosis.io/multisig\" target=\"_blank\">read more</a>\r" +
+    "\n" +
+    "    </li>\r" +
+    "\n" +
+    "  </ul>\r" +
+    "\n" +
+    "  <div class=\"form-group centered-dash\">\r" +
+    "\n" +
+    "    <button class=\"safe-migration-btn\" ng-click=\"create()\">Create new Safe</button>\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "  <div class=\"form-group\">\r" +
+    "\n" +
+    "    Questions? <a href=\"mailto:safe@gnosis.io\">Get in touch!</a>\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n" +
+    "<div class=\"modal-footer\">\r" +
+    "\n" +
+    "  <input type=\"checkbox\" ng-model=\"data.hideMigrationModal\" ng-checked=\"data.hideMigrationModal\"> Don't show this again\r" +
+    "\n" +
+    "  <button class=\"btn btn-danger\" type=\"button\" ng-click=\"dismiss()\">\r" +
+    "\n" +
+    "    Dismiss\r" +
+    "\n" +
+    "  </button>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n"
+  );
+
+
+  $templateCache.put('src/partials/modals/selectAddressFromBook.html',
+    "<div class=\"modal-header\">\r" +
+    "\n" +
+    "  <h3 class=\"modal-title\">\r" +
+    "\n" +
+    "    Browse address book\r" +
+    "\n" +
+    "  </h3>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n" +
+    "<div class=\"modal-body\" id=\"modal-body\">\r" +
+    "\n" +
+    "  <div class=\"form-group\">\r" +
+    "\n" +
+    "    <label for=\"name\">Name</label>\r" +
+    "\n" +
+    "    <input id=\"name\" type=\"text\" class=\"form-control\" ng-model=\"searchItem.name\" ng-change=\"search()\" />\r" +
+    "\n" +
+    "  </div>\r" +
+    "\n" +
+    "  <table class=\"table table-striped\">\r" +
+    "\n" +
+    "    <thead>\r" +
+    "\n" +
+    "      <tr>\r" +
+    "\n" +
+    "        <th>Name</th>\r" +
+    "\n" +
+    "        <th>Address</th>\r" +
+    "\n" +
+    "        <th>Type</th>\r" +
+    "\n" +
+    "      </tr>\r" +
+    "\n" +
+    "    </thead>\r" +
+    "\n" +
+    "    <tbody>\r" +
+    "\n" +
+    "      <tr\r" +
+    "\n" +
+    "        ng-if=\"addressArray.length > 0\" \r" +
+    "\n" +
+    "        ng-repeat=\"item in addressArray | filter:searchItem\">\r" +
+    "\n" +
+    "        <td>\r" +
+    "\n" +
+    "          <button class=\"btn btn-default\" ng-click=\"choose(item)\">\r" +
+    "\n" +
+    "            <i class=\"fa fa-plus\"></i>  \r" +
+    "\n" +
+    "          </button>\r" +
+    "\n" +
+    "          {{ item.name }}\r" +
+    "\n" +
+    "        </td>\r" +
+    "\n" +
+    "        <td>\r" +
+    "\n" +
+    "          {{ item.address }}\r" +
+    "\n" +
+    "        </td>\r" +
+    "\n" +
+    "        <td>\r" +
+    "\n" +
+    "          {{ item.type }}\r" +
+    "\n" +
+    "        </td>\r" +
+    "\n" +
+    "      </tr>\r" +
+    "\n" +
+    "      <tr ng-if=\"addressArray.length == 0\">\r" +
+    "\n" +
+    "        <td colspan=\"3\">No items available in the address book.</td>\r" +
+    "\n" +
+    "      </tr>\r" +
+    "\n" +
+    "    </tbody>\r" +
+    "\n" +
+    "  </table>\r" +
+    "\n" +
+    "</div>\r" +
+    "\n" +
+    "<div class=\"modal-footer\">\r" +
+    "\n" +
+    "  <button class=\"btn btn-danger\" type=\"button\" ng-click=\"cancel()\">\r" +
+    "\n" +
+    "    Cancel\r" +
+    "\n" +
+    "  </button>\r" +
+    "\n" +
+    "</div>\r" +
     "\n"
   );
 
